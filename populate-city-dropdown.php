@@ -20,6 +20,7 @@ if(isset($_POST["country"])){
     if($country !== 'Select'){
         echo "<label for='city'>City:</label>";
         echo "<select name='city' id='city'>";
+        echo "<option>" . "Select" . "</option>";
         foreach($countryCities[$country] as $value){
             echo "<option>". $value . "</option>";
         }

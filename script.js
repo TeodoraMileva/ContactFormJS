@@ -1,62 +1,54 @@
 $(document).ready(function(){
     //Retrieve the data from the JSON file, 
-    //use 'data' later on to pass it to the populate-city-dropdown.php file
+    //use 'data' to access the data from the file when you need it
     $.get("https://api.npoint.io/66866aef2c21692fe055", function(data){
 
-        let countryArr = []; //use this array to save all the countries (just the countries) from the JSON file
-
-        data.forEach(element => {
-            countryArr.push(element.country); //pushing all the countries to the array
-        });
-
-        console.log(countryArr);
         console.log(data);
 
         //Populate the country dropdown with the countries in the JSON file
-        //First way to make the request
-        // $.post("populate-country-dropdown.php", {countries: countryArr}, function(data){
-        //     // Display the returned data in country dropdown
-        //     $("#country-dropdown").html(data);
-        // });
+        $("#country-dropdown").append("<label for='country'>Country:</label>")
+                              .append("<select name='country' id='country'>");
 
-        //Second way to make the request
-        $.ajax({
-            type: "POST",
-            url: "populate-country-dropdown.php",
-            data: { countries : countryArr } //send the array with the countries
-        }).done(function(data){
-            // Display the returned data in country dropdown
-            $("#country-dropdown").html(data);
+        $("#country").append("<option>Select</option>");
+
+        data.forEach(element => {
+            $("#country").append("<option value = '" + element.country + "'" +
+                                          ">" + element.country + "</option>");
         });
 
-        //Populate the city dropdown based on the selected country
-        //First way
-        // $("select#country").on("change", function(){
-        //     let selectedCountry = $("#country option:selected").val();
-        //     $.ajax({
-        //         type: "POST",
-        //         url: "populate-city-dropdown.php",
-        //         data: { country : selectedCountry, countryData: data } 
-        //         //send the selected country, and the data from the JSON file
-        //     }).done(function(data){
-        //         $("#city-dropdown").html(data);
-        //     });
-        // });
+        $("#country-dropdown").append("</select>");
 
-        //Second way
+        //Populate the city dropdown based on the selected country
         $(document.body).on('change','#country', function(){
+
+            $("#city-dropdown").empty();
+
             let selectedCountry = $("#country option:selected").val();
-            $.ajax({
-                type: "POST",
-                url: "populate-city-dropdown.php",
-                data: { country : selectedCountry, countryData: data } 
-                //send the selected country, and the data from the JSON file
-            }).done(function(data){
-                $("#city-dropdown").html(data);
-            });
+
+            if (selectedCountry !== "Select"){
+
+                let selectedCountryInfo = data.find(checkCountry);
+
+                function checkCountry(countryInfo){
+                    return countryInfo.country === selectedCountry;
+                }
+
+                $("#city-dropdown").append("<label for='city'>City:</label>")
+                                   .append("<select name='city' id='city'>");
+
+                $("#city").append("<option>Select</option>");
+
+                selectedCountryInfo.cities.forEach(element => {
+                    $("#city").append("<option value = '" + element + "'" +
+                                                  ">" + element + "</option>");
+                });
+
+                $("#city-dropdown").append("</select>");
+            }
         });
     });
 
+    //Validation on form submit
     let onFormSubmitMessage = "";
     let invalidInputs = [];
 
@@ -69,6 +61,7 @@ $(document).ready(function(){
         $("#details").text("");
 
         validateCountry();
+        validateCity();
         validatePrice();
         validateBirthDate();
 
@@ -84,6 +77,14 @@ $(document).ready(function(){
         if (country === 'Select'){
             onFormSubmitMessage = "Error: The form was not filled in correctly";
             invalidInputs.push("country");
+        }
+    }
+
+    function validateCity(){
+        let city = $("#city").val();
+        if (city === 'Select'){
+            onFormSubmitMessage = "Error: The form was not filled in correctly";
+            invalidInputs.push("city");
         }
     }
 
